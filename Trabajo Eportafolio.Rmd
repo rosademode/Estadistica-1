@@ -1,0 +1,948 @@
+---
+title: "Trabajo EPortafolio"
+author: "Grupo 6"
+date: '2022-06-22'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+
+#Llamado a paquetes
+
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tinytex)
+library(printr)
+library(knitr)
+library(kableExtra)
+
+#Cargar base de datos
+
+base_G3 <- read_excel("base_G3.xlsx")
+
+#Preparar base de datos
+
+g3 <- base_G3
+
+#Dejar nombres de las columnas en minuscula
+
+names(g3)=c("educacion","sector","sexo","experiencia","edad",
+        	"region", "ocupacion","area","casado","ingreso",
+        	"jornada")
+
+#Cambiar números en datos 1,0 en variables de texto
+#*casados=1, soltero=0
+
+g3$sector[g3$sector == 0] <- "publico"
+g3$sector[g3$sector == 1] <- "privado"
+
+g3$sexo[g3$sexo == 0] <- "masculino"
+g3$sexo[g3$sexo == 1] <- "femenino"
+
+g3$jornada[g3$jornada == 0] <- "completa"
+g3$jornada[g3$jornada == 1] <- "parcial"
+
+g3$casado[g3$casado == 0] <- "soltero"
+g3$casado[g3$casado == 1] <- "casado"
+
+#Definimos la funcion mode(moda)
+mode <- function(x) {
+  return(as.numeric(names(which.max(table(x)))))
+}
+
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#Educacion
+#Tabla de Frecuencia de educacion
+
+frec_edu <- g3 %>% group_by(educacion) %>%
+  summarise(frecuencia=n())
+
+#Histograma educacion
+
+hist_educacion <- g3 %>%
+  ggplot(aes(x = educacion)) +
+  geom_histogram(fill="steelblue", col = "black",alpha=0.5,bins = 18,binwidth = 1) +
+  theme_bw() +
+  geom_vline(xintercept = mean(g3$educacion), color = "red", size = 1) +
+  geom_vline(xintercept = median(g3$educacion), color = "green", size = 2)+
+  geom_vline(xintercept = mode(g3$educacion), color = "blue", size = 1)+
+  scale_x_continuous(breaks = seq(0,  19, 1), limit = c(0,  19)) +
+  scale_y_continuous(breaks = seq(0,  250, 25), limit = c(0,  250))+
+  labs(title= "Histograma de Educacion",x="Años de Educacion",y="Frecuencia")
+
+#Media= Rojo, Mediana= Verde, Moda= Azul
+
+#Tabla con medidas de posición y distribución.
+
+medidas_educacion <- g3 %>% select(educacion) %>%
+  summarise(media = mean(educacion),
+        	mediana=median(educacion),
+        	moda=mode(educacion),
+        	varianza=var(educacion),
+        	desviacion=sd(educacion),
+        	cv= desviacion/media*100)
+
+#Sesgo media>moda=mediana <- Sesgo positivo, asimetria a la derecha
+
+#Busqueda de outliers
+
+boxplot(g3$educacion,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Años de educacion", main= "Grafico de caja bigote Educacion")
+ 
+
+#Si existe outliers (mirar puntos atipicos en el grafico)
+
+#Experiencia
+#Tabla de Frecuencia
+
+frec_experiencia <- g3 %>% group_by(experiencia) %>%
+  summarise(frecuencia=n())
+
+#Histograma
+
+hist_experiencia <- g3 %>%
+  ggplot()+ aes(x= experiencia)+
+  geom_histogram(fill="steelblue", col = "black",alpha=0.5,bins = 50) +
+  theme_bw() +
+  geom_vline(xintercept = mean(g3$experiencia), color = "red", size = 1) +
+  geom_vline(xintercept = median(g3$experiencia), color = "green", size = 1)+
+  geom_vline(xintercept = mode(g3$experiencia), color = "blue", size = 1)+
+  scale_y_continuous(breaks = seq(0,  35, 5), limit = c(0,  35))+
+  scale_x_continuous(breaks = seq(0,  50, 5), limit = c(0,  50))+
+  labs(title= "Histograma de Experiencia",x="Años de Experiencia",y="Frecuencia")
+
+#Media=Rojo, Mediana= Verde, Moda= Azul
+
+#Tabla con medidas de posición y distribución.
+
+medidas_experiencia <- g3 %>% select(experiencia) %>%
+  summarise(media = mean(experiencia),
+        	mediana=median(experiencia),
+        	moda=mode(experiencia),
+        	varianza=var(experiencia),
+        	desviacion=sd(experiencia),
+        	cv= desviacion/media*100)
+
+#Sesgo media>mediana>moda <- sesgo positivo, asimetria a la derecha
+
+#Busqueda de outliers
+
+boxplot(g3$experiencia,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Años de experiencia", main= "Grafico de caja bigote Experiencia")
+
+#No hay outliers
+
+#Edad
+#Tabla de frecuencia
+
+frec_edad <- g3 %>% group_by(edad) %>%
+  summarise(frecuencia=n())
+
+#Histograma Edad
+
+hist_edad <- g3 %>%
+  ggplot()+ aes(x= edad)+
+  geom_histogram(fill="steelblue", col = "black",alpha=0.5,bins =50, binwidth = 1 ) +
+  theme_bw() +
+  geom_vline(xintercept = mean(g3$edad), color = "red", size = 1) +
+  geom_vline(xintercept = median(g3$edad), color = "green", size = 1,)+
+  geom_vline(xintercept = mode(g3$edad), color = "blue", size = 1)+
+  scale_y_continuous(breaks = seq(0,  30, 5), limit = c(0,  30))+
+  scale_x_continuous(breaks = seq(17,  67, 5), limit = c(17,  67))+
+  labs(title= "Histograma de edad",x="Edad",y="Frecuencia")
+#Media=Rojo, Mediana= Verde, Moda= Azul
+
+#Tabla con medidas de posición y distribución.
+
+medidas_edad <- g3 %>% select(edad) %>%
+  summarise(media = mean(edad),
+        	mediana=median(edad),
+        	moda=mode(edad),
+        	varianza=var(edad),
+        	desviacion=sd(edad),
+        	cv= desviacion/media*100)
+
+#Sesgo media>mediana>moda <- sesgo positivo, asimetria a la derecha
+
+#Busqueda de ouliers
+boxplot(g3$edad,col = "steelblue", horizontal = TRUE,
+    	xlab= "Edad", main= "Grafico de caja bigote Edad")
+#No hay outliers
+
+#Ingreso
+#Tabla de frecuencia
+
+frec_ingreso <- g3 %>% group_by(ingreso) %>%
+  summarise(frecuencia=n())
+
+#Histograma ingreso
+
+hist_ingreso <- g3 %>%
+  ggplot()+ aes(x= ingreso)+
+  geom_histogram(fill="steelblue", col = "black",alpha=0.5) +
+  theme_bw() +
+  geom_vline(xintercept = mean(g3$ingreso), color = "red", size = 1) +
+  geom_vline(xintercept = median(g3$ingreso), color = "green", size = 1)+
+  geom_vline(xintercept = mode(g3$ingreso), color = "blue", size = 1)+
+  scale_x_continuous(breaks = seq(0,  5000, 500), limit = c(0,  5000))+
+  scale_y_continuous(breaks = seq(0,  100, 10), limit = c(0,  100))+
+  labs(title= "Histograma de Ingreso",x="Ingreso",y="Frecuencia")
+
+#Media=Rojo, Mediana= Verde, Moda= Azul
+
+#Tabla con medidas de posición y distribución.
+
+medidas_ingreso <- g3 %>% select(ingreso) %>%
+  summarise(media = mean(ingreso),
+        	mediana=median(ingreso),
+        	moda=mode(ingreso),
+        	varianza=var(ingreso),
+        	desviacion=sd(ingreso),
+        	cv= desviacion/media*100)
+
+
+#Sesgo media>mediana>moda <- sesgo positivo, asimetria a la derecha
+#Busqueda de outliers
+
+box_ingreso <-  boxplot(g3$ingreso,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Ingreso", main= "Grafico de caja bigote Ingreso")
+#Si existe outliers (mirar puntos atipicos en el grafico)
+
+######################DATOS BINARIOS####################################
+
+#Sector
+#Tabla de frecuencia
+
+frec_sector <- g3 %>% group_by(sector) %>%
+  summarise(frecuencia=n())
+
+# X~B(n,p)
+n <- 534
+#X(Privado es el éxito)
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de trabajar en el sector privado
+
+p_privado <- 156/534
+
+E_privado <- n*p_privado
+
+#V = Varianza = n*p*(1-p)
+
+V_privado <- n*p_privado*(1-p_privado)
+
+#Desviacion estandar
+
+d_privado <- sqrt(V_privado)
+
+
+# X~B(n,p)
+
+#X(Publico es el éxito)
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de trabajar en el sector publico
+
+p_publico <- 378/534
+
+E_publico <- n*p_publico
+
+#V = Varianza = n*p*(1-p)
+
+V_publico <- n*p_publico*(1-p_publico)
+
+#Desviacion estandar
+
+d_publico <- sqrt(V_publico)
+
+
+#Sexo
+#Tabla de frecuencia
+frec_sexo <- g3 %>% group_by(sexo) %>%
+  summarise(frecuencia=n())
+
+# X~B(n,p)
+
+#X(Mujer es el éxito)
+
+#E = Esperanza = (n*p) = Media
+#n = Numero de experimentos realizados
+#p = Probabilidad de ser mujer
+
+p_mujer <- 245/534
+
+E_mujer <- n*p_mujer
+
+#V = Varianza = n*p*(1-p)
+
+V_mujer <- n*p_mujer*(1-p_mujer)
+
+#Desviacion estandar
+d_mujer <- sqrt(V_mujer)
+
+#X~B(n,p)
+
+#X(Hombre es es el éxito)
+#E = Esperanza = (n*p) = Media
+#n = Numero de experimentos realizados
+#p = Probabilidad de ser hombre
+
+p_hombre <- 289/534
+
+E_hombre <- n*p_hombre
+
+#V = Varianza = n*p*(1-p)
+
+V_hombre <- n*p_hombre*(1-p_hombre)
+
+#Desviacion estandar
+
+d_hombre <- sqrt(V_hombre)
+
+#Casado
+#Tabla de frecuencia
+
+frec_casado <- g3 %>% group_by(casado) %>%
+  summarise(frecuencia=n())
+
+# X~B(n,p)
+
+#X(Casado es el éxito)
+
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de que esté casado
+
+p_casado <- 350/534
+
+E_casado <- n*p_casado
+
+#V = Varianza = n*p*(1-p)
+
+V_casado <- n*p_casado*(1-p_casado)
+
+#Desviacion estandar
+d_casado <- sqrt(V_casado)
+
+# X~B(n,p)
+
+#X(Soltero es el éxito)
+
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de que esté soltero
+
+p_soltero <- 350/534
+
+E_soltero <- n*p_soltero
+
+#V = Varianza = n*p*(1-p)
+
+V_soltero <- n*p_soltero*(1-p_soltero)
+
+#Desviacion estandar
+d_soltero <- sqrt(V_soltero)
+
+#Jornada
+#Tabla de frecuencia
+frec_jornada <- g3 %>% group_by(jornada) %>%
+  summarise(frecuencia=n())
+
+
+
+
+# X~B(n,p)
+
+#X(Parcial es el éxito)
+
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de que sea parcial
+
+p_parcial <- 55/534
+
+E_parcial <- n*p_parcial
+
+#V = Varianza = n*p*(1-p)
+
+V_parcial <- n*p_parcial*(1-p_parcial)
+
+#Desviacion estandar
+d_parcial <- sqrt(V_parcial)
+
+# X~B(n,p)
+
+#X(Completa es el éxito)
+
+#E = Esperanza = (n*p) = Media
+#p = Probabilidad de que sea completa
+
+p_completa <- 479/534
+
+E_completa <- n*p_completa
+
+#V = Varianza = n*p*(1-p)
+
+V_completa <- n*p_completa*(1-p_completa)
+
+#Desviacion estandar
+d_completa <- sqrt(V_completa)
+
+#Region
+frec_region <- g3 %>% group_by(region) %>%
+  summarise(frecuencia=n())
+
+#Ocupacion
+frec_ocupacion <- g3 %>% group_by(ocupacion) %>%
+  summarise(frecuencia=n())
+
+#Area
+frec_area <- g3 %>% group_by(area) %>%
+  summarise(frecuencia=n())
+
+########################RELACION ENTRE VARIABLES################################
+
+# Ingreso promedio por sexo
+
+ingreso_sexo <- g3 %>% group_by(sexo) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por sector
+
+ingreso_sector <- g3 %>% group_by(sector) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por región
+
+ingreso_region <- g3 %>% group_by(region) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por ocupación
+
+ingreso_ocupacion <- g3 %>% group_by(ocupacion) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por área
+
+ingreso_area <- g3 %>% group_by(area) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por estado civil
+
+ingreso_casado <- g3 %>% group_by(casado) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso promedio por jornada
+
+ingreso_jornada <- g3 %>% group_by(jornada) %>% summarize(promedio = mean(ingreso))
+
+# Ingreso con respecto a años de  educación
+
+ingreso_educacion_jitter <- g3 %>% ggplot(aes(x = educacion, y = ingreso)) +
+  geom_jitter(alpha = 0.5) +
+  labs(title = "Grafico de dispersion",
+   	x="Educacion",
+   	y="Ingreso") +
+  theme_minimal()+
+  geom_smooth(se = FALSE, method = lm)
+
+#Correlacion
+cor_ei <- cor(g3$educacion,g3$ingreso)
+
+#Ingreso respecto a la edad
+
+ingreso_edad_jitter <- g3 %>% ggplot(aes(x = edad, y = ingreso)) +
+  geom_jitter(alpha = 0.5) +
+  labs(title = "Grafico de dispersion",
+   	x="Edad",
+   	y="Ingreso") +
+  theme_minimal()+
+  geom_smooth(se = FALSE, method = lm)+
+  geom_smooth( method = lm,se = FALSE,)
+
+#Correlacion
+cor_di <- cor(g3$edad,g3$ingreso)
+
+#Ingreso respecto a los años de experiencia
+
+ingreso_exp_jitter <- g3 %>% ggplot(aes(x = experiencia, y = ingreso)) +
+  geom_jitter(alpha = 0.5) +
+  labs(title = "Gráfico de dispersion",
+   	x="Experiencia",
+   	y="Ingreso") +
+  theme_minimal()+
+  geom_smooth(se = FALSE, method = lm)
+
+#Correlacion
+cor_xi <- cor(g3$experiencia,g3$ingreso)
+
+```
+\newpage
+# ***Introducción***
+El presente informe analiza una base de datos que contiene una muestra de 534 casos encuestados sobre salarios.  Dichas encuestas fueron realizadas a un grupo de personas insertas en el mundo laboral, quienes fueron estudiados mediante 11 variables, definidas por:
+1. *Educación: Años de educación de la persona encuestada.*
+2. *Sector: Sector donde trabaja el encuestado. Puede trabajar en el sector privado (1) o en el sector público (0).*
+3. *Sexo: Masculino (0) o Femenino (1).*
+4. *Experiencia: Años de experiencia en el ámbito laboral.*
+5. *Edad: Edad del encuestado.*
+6. *Región: Región de en la cual habita la persona encuestada. Puede ser Metropolitana, Costa o Sur.*
+7. *Ocupación: Ocupación del encuestado. Puede ser en Transporte, Administración, Atención pública, Profesional, Servicios, Ventas u Otro.*
+8. *Área: Área en la cual trabaja el encuestado, puede ser en construcción, manufactura u otra.*
+9. *Casado: Corresponde a si el encuestado está Casado (1) o Soltero (0).*
+10. *Ingreso: Ingreso que percibe la persona encuestada en miles.*
+11. *Jornada: Jornada laboral. Puede ser completa (0) o parcial (1).*
+
+El objetivo principal de este informe es analizar cada una de estas variables mediante los contenidos aprendidos en el curso como análisis descriptivos, modelos discretos y continuos. Con el fin de determinar posibles relaciones, estimaciones, observaciones anormales (outliers), sesgos, entre otros razonamientos que se llevarán a cabo en el desarrollo de este trabajo.
+
+Considerando la situación actual, determinaremos cómo hoy en día difieren los salarios de las personas según su sexo, su educación, su ocupación y experiencia. Además, de analizar diversas variables para identificar las relaciones que puedan existir entre estas.
+Identificaremos si existe algún tipo de discriminación hacia un grupo determinado, la cual puede ser con respecto al sexo, experiencia, edad, educación, incluso estado civil de las personas encuestadas.
+
+
+
+
+\newpage
+# ***Análisis Descriptivo***
+
+En esta parte del trabajo, se presenta el análisis descriptivo realizado para cada variable de la muestra. Los resultados obtenidos se muestran a través de tablas de frecuencia, histogramas, distintos tipos de gráficos, el análisis sobre la presencia de datos atípicos y tablas con medidas de posición y distribución.
+
+# ***Análisis de variables cuantitativas***
+En esta sección se analizará las variables cuantitativas entregadas en la base de datos
+
+
+## ***Análisis de variable educación***
+
+***Tabla de Frecuencia***
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+frec_edu %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10)
+```
+
+
+***Histograma***
+```{r echo=FALSE, fig.align="center", fig.height=2.5, fig.width=4, message=FALSE, warning=FALSE}
+hist_educacion
+```
+Media= Rojo, Mediana= Verde, Moda= Azul
+
+
+***Tabla con medidas de dispersión y distribución.***
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+medidas_educacion %>% kable %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10)
+```
+
+
+***Análisis de histograma y Tabla con medidas de dispersión y distribución.***
+
+A partir de la tabla, se puede observar que la media es de *12.91948*, lo que implica que las personas estudiaron un promedio de aproximadamente 13 años. Si se ordenara los datos de manera ascendente, el promedio de los dos datos centrales, es de 12 años, lo que implica que la mediana de estos datos son 12 años. El dato que más se repite es el que los encuestados estudian 12 años, siendo esta la moda.
+
+Los resultados de estas tres medidas de localización y la interpretación del gráfico, muestra que los datos están sesgados positivamente con una asimetría a la derecha. Lo anterior se debe a que la media es mayor que la mediana y la moda.
+
+En la tabla, tambien se obtuvieron las medidas de dispersión que corresponden a una varianza de	 
+*6.441909*, una desviación estandar de *2.538092* y un coeficiente de variación de *19.64547*.
+La desviación estandar indica que,la dispersión de los años de educación entre estas personas es de 2.5 años, mientras las otras medidas, tienen el fin de comparar la variabilidad con otras variables.
+
+
+
+## ***Medidas de posición.***
+
+
+***Rango***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+max(g3$educacion)-min(g3$educacion)
+```
+
+***Cuartiles***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quantile(g3$educacion, prob=c(0,0.25,0.5,0.75,1))
+
+```
+
+***Rango intercuartilico***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+14-12
+```
+
+El rango representa la diferencia entre el año máximo que estudió un encuestado y el año mínimo. Esta diferencia corresponde a *14* años.
+Con base en los cuartiles, el 25% de los encuestados estudió entre 4 a 12 años. Por otra parte, el 50% estudió 12 años o menos. El 75% estudió 14 años o menos, y finalmente, el 100% de los encuestados estudió 18 años o menos.
+
+El rango intercuartílico representa la distancia entre el cuartil 3 y el cuartil 1, donde se concentra el 50% de los datos. En este caso es de 2.
+
+\newpage
+***Estudio de datos atípicos.***
+
+Para analizar la existencia de datos atípicos, se utilizó diagrama de caja bigote.
+Los datos atípicos corresponden a todos los datos que están a la izquierda del extremo inferior del diagrama y a la derecha del extremo superior del diagrama.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.align="center", fig.height=3.5, fig.width=5.5}
+boxplot(g3$educacion,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Años de educación", main= "Diagrama de caja bigote Educación")
+```
+
+Analizando el diagrama de caja bigote, se puede observar que existen datos outliers, los cuales están ubicados en los valores 4,6,7,8 y 18 años de educación.
+
+\newpage
+## ***Análisis de variable experiencia***
+
+
+
+***Histograma***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=5}
+hist_experiencia
+```
+Media= Rojo, Mediana= Verde, Moda= Azul
+
+
+
+***Tabla con medidas de dispersión y distribución.***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+medidas_experiencia%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+
+
+
+***Análisis de histograma y Tabla con medidas de dispersión y distribución.***
+
+A partir de la tabla, se puede observar que la media es de *17.33895*, lo que implica que las personas tienen una experiencia en promedio de aproximadamente 17 años. Si se ordenara los datos de manera ascendente, el promedio de los dos datos centrales, es de 15 años, lo que implica que la mediana de estos datos son 15 años. El dato que más se repite es el que los encuestados tienen 14 años de experiencia, siendo esta la moda.
+
+Los resultados de estas tres medidas de localización y la interpretación del gráfico, muestra que los datos están sesgados positivamente con una asimetría a la derecha. Lo anterior se debe a que la media es mayor que la mediana y la moda.
+
+En la tabla, tambien se obtuvieron las medidas de dispersión que corresponden a una varianza de	 
+*138.8886*, una desviación estandar de *11.7851* y un coeficiente de variación de *67.96895*.
+La desviación estandar indica que,la dispersión de los años de experiencia entre estas personas es de 11.8 años aproximadamente.
+
+\newpage
+## ***Medidas de posición.***
+
+***Rango***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+max(g3$experiencia)-min(g3$experiencia)
+```
+
+***Cuartiles***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quantile(g3$experiencia, prob=c(0,0.25,0.5,0.75,1))
+
+```
+
+***Rango intercuartilico***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+25-8
+```
+El rango representa la diferencia entre el año máximo de experiencia de un encuestado y el año mínimo. Esta diferencia corresponde a *47* años.
+Con base en los cuartiles, el 25% de los encuestados tiene una experiencia de 8 años o menos. Por otra parte, el 50% una experiencia de 15 años o menos. El 75% una experiencia de 25 años o menos, y finalmente, el 100% de los encuestados tiene una experiencia de 47 años o menos.
+
+El rango intercuartílico representa la distancia entre el cuartil 3 y el cuartil 1, donde se concentra el 50% de los datos. En este caso es de 17.
+
+
+
+***Estudio de datos atípicos.***
+Se utilizó el mismo metodo para analizar los datos atípicos que en la primera variable.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.align="center", fig.height=3.5, fig.width=5}
+boxplot(g3$experiencia,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Años de experiencia", main= "Diagrama de caja bigote Experiencia")
+```
+Analizando el diagrama de caja bigote, se puede observar que no existen datos outliers.
+
+\newpage
+## ***Análisis de variable edad***
+
+
+
+***Histograma***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=5}
+hist_edad
+```
+Media= Rojo, Mediana= Verde, Moda= Azul
+
+
+
+***Tabla con medidas de dispersión y distribución.***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+medidas_edad %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+
+
+
+***Análisis de histograma y Tabla con medidas de dispersión y distribución.***
+
+A partir de la tabla, se puede observar que la media es de *36.85206*, lo que implica que las personas encuestadas tienen una edad promedio de aproximadamente 37 años. Si se ordenara los datos de manera ascendente, el promedio de los dos datos centrales, es de 35 años, lo que implica que la mediana de estos datos son 35 años de edad. El dato que más se repite es el que los encuestados tienen 32 años de edad, siendo este la moda.
+
+Los resultados de estas tres medidas de localización y la interpretación del gráfico, muestra que los datos están sesgados positivamente con una asimetría a la derecha. Lo anterior se debe a que la media es mayor que la mediana y la moda.
+
+En la tabla, tambien se obtuvieron las medidas de dispersión que corresponden a una varianza de	 
+*136.9931	*, una desviación estandar de *11.7044	* y un coeficiente de variación de *31.76052*.
+La desviación estandar indica que,la dispersión de los años de edad entre estas personas es de 12 años.
+
+\newpage
+## ***Medidas de posición.***
+
+***Rango***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+max(g3$edad)-min(g3$edad)
+```
+
+***Cuartiles***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quantile(g3$edad, prob=c(0,0.25,0.5,0.75,1))
+
+```
+
+***Rango intercuartilico***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+44-28
+```
+El rango representa la diferencia entre el la edad máxima de un encuestado y la edad mínima. Esta diferencia corresponde a *46* años.
+Con base en los cuartiles, el 25% de los encuestados tiene una edad entre 18 a 28 años. Por otra parte, el 50% tiene una edad de 35 años o menos. El 75% tiene una edad de 44 años o menos, y finalmente, el 100% de los encuestados tiene una edad de 64 años o menos.
+
+El rango intercuartílico representa la distancia entre el cuartil 3 y el cuartil 1, donde se concentra el 50% de los datos. En este caso es de 2.
+
+
+***Estudio de datos atípicos.***
+
+Para analizar la existencia de datos atípicos, se utilizó diagrama de caja bigote.
+Los datos atípicos corresponden a todos los datos que están a la izquierda del extremo inferior del diagrama y a la derecha del extremo superior del diagrama.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3.5, fig.width=5}
+boxplot(g3$educacion,col = "steelblue", horizontal = TRUE,
+    	xlab= "Educacion", main= "Diagrama de caja bigote Educacion")
+```
+
+Analizando el diagrama de caja bigote, se puede observar que existen datos outliers, los cuales están ubicados en los valores 4,6,7,8 y 18 años de educación.
+
+\newpage
+## ***Análisis de variable ingreso***
+
+
+***Histograma***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=5}
+hist_ingreso
+```
+Media= Rojo, Mediana= Verde, Moda= Azul
+
+
+***Tabla con medidas de dispersión y distribución.***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+medidas_ingreso %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+
+
+***Análisis de histograma y Tabla con medidas de dispersión y distribución.***
+
+A partir de la tabla, se puede observar que la media de ingreso es de *903.2022*, lo que implica que las personas tienen un ingreso promedio de aproximadamente \$903 000. Si se ordenara los datos de manera ascendente, el promedio de los dos datos centrales, es de 778, lo que implica que la mediana de los ingresos es de \$778 000. El dato que más se repite es el que los encuestados tienen un ingreso de \$500 000 siendo este el ingreso de moda.
+
+Los resultados de estas tres medidas de localización y la interpretación del gráfico, muestra que los datos están sesgados positivamente con una asimetría a la derecha. Lo anterior se debe a que la media es mayor que la mediana y la moda.
+
+En la tabla, tambien se obtuvieron las medidas de dispersión que corresponden a una varianza de	 
+*264375.9	*, una desviación estandar de *514.175	* y un coeficiente de variación de *56.928*.
+La desviación estandar indica que,la dispersión de la cantidad de ingreso entre estas personas es de $514 175. variables.
+
+
+\newpage
+## ***Medidas de posición.***
+
+***Rango***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+max(g3$ingreso)-min(g3$ingreso)
+```
+
+***Cuartiles***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quantile(g3$ingreso, prob=c(0,0.25,0.5,0.75,1))
+
+```
+
+***Rango intercuartilico***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+1125-525
+```
+El rango representa la diferencia entre el ingreso máximo que gana un encuestado y el ingreso mínimo. Esta diferencia corresponde a *$4 325 000*.
+Con base en los cuartiles, el 25% de los encuestados tiene un ingreso entre \$125 000 a \$525 000 años. Por otra parte, el 50% tiene un ingreso de \$778 000 años o menos. El 75% tiene un ingreso de \$1 125 000 menos, y finalmente, el 100% de los encuestados tiene un ingreso de \$4 450 000 o menos.
+
+El rango intercuartílico representa la distancia entre el cuartil 3 y el cuartil 1, donde se concentra el 50% de los datos. En este caso es de 600.
+
+
+***Estudio de datos atípicos.***
+
+Para analizar la existencia de datos atípicos, se utilizó diagrama de caja bigote.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3.5, fig.width=5}
+boxplot(g3$ingreso,col = "steelblue",alpha=0.5, horizontal = TRUE,
+    	xlab= "Ingreso", main= "Diagrama de caja bigote Ingreso")
+```
+
+Analizando el diagrama de caja bigote, se puede observar que existen datos outliers, lo cuales se encuentran entre \$2 000 000 y \$ 5 000 000
+
+\newpage
+## ***Análisis de datos binarios***
+Los datos binarios entregados por la base de datos, son aquellas variables las cuales tinen 0 y 1.
+Sin embargo, se creó una nueva base de datos para darle valores a estos datos binarios. Por otra parte, la media, la desviación estándar y la varianza se calcularán más adelante en el informe en la sección de modelos discretos.
+
+
+## ***Análisis de variable sector***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_sector %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla, se observa que en el sector privado trabajan 156 personas. Por otra parte, en el sector público, trabajan 378 personas.
+
+
+## ***Análisis de variable sexo***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_sexo %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla, se observa que del total de los encuestados, 245 corresponden a mujeres. Mientras que 289 corresponden a hombres.
+
+
+## ***Análisis de variable casado***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_casado %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla, se observa que 350 personas están casadas y 184 personas se encuentran solteras.
+
+
+## ***Análisis de variable jornada***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_jornada %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla, se observa que 479 personas trabajan en jornada completa y 55 personas trabajan en jornada parcial.
+
+\newpage
+## ***Análisis de variable cualitativas***
+En las variables cualitativas solo podemos realizar tablas de frecuencia, ya que sus datos son valores de texto.
+
+
+## ***Análisis de variable región***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_region %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla se observa que 27 personas se encuentran en la región costa, 440 personas se encuentran en la región metropolitana y 67 personas se encuentran en la región sur.
+
+
+## ***Análisis de variable ocupación***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_ocupacion%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla se observa que la ocupación de 46 personas es en administración, la de 77 es en atención pública, la de 93 personas es profesional, la de 60 personas es de servicios, la de 222 es de transporte, la de 34 personas son las ventas y 2 personas tienen otra ocupación.
+
+
+## ***Análisis de variable área***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+frec_area %>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+De la tabla se observa que el área de trabajo de 24 personas es la construcción, la de 98 personas es manufactura y la 412 personas su área de trabajo es otra.
+
+\newpage
+## ***Medidas de asociación*** 
+*Con respecto a la variable ingreso en datos binarios y varibles cualitativas.*
+
+Para las variables binarias y cualitativas se armaron tablas con los promedios de ingreso de cada una de las variables.
+
+
+## ***Variable sexo***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_sexo%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+En esta tabla se puede observar que en promedio, los hombres ganan más que las mujeres.
+
+
+## ***Variable sector***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_sector%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+Se observa que en promedio las personas que trabajan en el sector público ganan mas que los que trabajan en el sector privado.
+
+
+## ***Variable región***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_region%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+En la tabla se observa que las personas de la Región Metropolitana tienen en promedio un ingreso mayor a las otras regiones. La segunda región con mayores ingresos es la del Sur. Finalmente, la región con menos ingresos es la de la Costa.
+
+
+## ***Variable ocupación***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_ocupacion%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+Se observa que, las personas que se ocupan en administración, en promedio, son las que más ingresos preciben. Mientras que las que menos ingresos perciben son las personas que tienen otra ocupación.
+
+
+## ***Variable área***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_area%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+Se observa que, en promedio, el área que más ingresos obtiene es la de manufactura. Después la de construcción y finalmente, las otras áreas.
+
+
+## ***Variable casado***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_casado%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+Se observa que, en promedio, las personas casadas perciben más ingresos.
+
+
+## ***Variable jornada***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ingreso_jornada%>% kable() %>%  kable_styling(full_width =F,position = "left",
+                                        font_size = 10) 
+```
+Aunque parezca una obviedad, las personas que trabajan en jornada completa, ganan más en comparación a los que trabajan en jornada parcial.
+
+\newpage
+*Con respecto a la variable ingreso y varibles cuantitativas.*
+En esta sección del informe, se realizó graficos de puntos con línea de tendencia para identificar el tipo de relación entre la variable ingreso y las otras variables cuantitativas. Además, se calculó la correlación para identificar con cual tiene una relacción positiva más fuerte.
+
+## ***Variable edad***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=4}
+ingreso_edad_jitter
+```
+Se observa que a medida que aumenta la edad, la tendencia es que el ingreso percibido aumente para las personas.
+
+
+## ***Variable experiencia***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=4}
+ingreso_exp_jitter
+```
+Se observa que a medida que aumentan los años de experiencia de las personas, la tendencia es que su ingreso percibido aumente.
+
+
+## ***Variable educación***
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=4}
+ingreso_educacion_jitter
+```
+Se observa que a medida que aumentan los años de educación de las personas, la tendencia es que su ingreso percibido aumente.
+
+
+\newpage
+## ***Análisis de correlaciones***
+
+***Correlación de ingreso con edad***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cor_di
+```
+***Correlación de ingreso con experiencia***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cor_xi
+```
+***Correlación de ingreso con educación***
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cor_ei
+```
+
+Se observa que la correlación más fuerte es la de ingreso con educación, por ende, cuando aumenta la variable educación, el ingreso aumenta en mayor medida que cuando aumenta las variables experiencia y edad.
+
